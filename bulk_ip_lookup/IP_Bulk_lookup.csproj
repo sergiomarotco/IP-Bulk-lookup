@@ -133,6 +133,9 @@
     <None Include="bin\Debug\export.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\Clipboard.png" />
+    <None Include="bin\Debug\Clipboard_Paste.png" />
+    <None Include="bin\Debug\Clipboard_Copy.png" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
