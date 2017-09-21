@@ -46,11 +46,14 @@
             this.progresslabel = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // linkLabel2
@@ -180,7 +183,7 @@
             // progresslabel
             // 
             this.progresslabel.AutoSize = true;
-            this.progresslabel.Location = new System.Drawing.Point(305, 482);
+            this.progresslabel.Location = new System.Drawing.Point(302, 509);
             this.progresslabel.Name = "progresslabel";
             this.progresslabel.Size = new System.Drawing.Size(0, 13);
             this.progresslabel.TabIndex = 11;
@@ -205,9 +208,31 @@
             this.label2.TabIndex = 13;
             this.label2.Text = "Clipboard paste";
             // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Image = global::IP_Bulk_lookup.Properties.Resources.Folder;
+            this.pictureBox3.Location = new System.Drawing.Point(309, 408);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(80, 80);
+            this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox3.TabIndex = 14;
+            this.pictureBox3.TabStop = false;
+            this.pictureBox3.Click += new System.EventHandler(this.PictureBox3_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(311, 491);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(75, 13);
+            this.label3.TabIndex = 15;
+            this.label3.Text = "Program folder";
+            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(406, 544);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.pictureBox3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.pictureBox2);
@@ -229,6 +254,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -251,6 +277,8 @@
         private System.Windows.Forms.Label progresslabel;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.PictureBox pictureBox3;
+        private System.Windows.Forms.Label label3;
     }
 }
 

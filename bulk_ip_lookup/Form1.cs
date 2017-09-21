@@ -99,7 +99,7 @@ namespace IP_Bulk_lookup
         }
 
         private void Form1_Load_1(object sender, EventArgs e)
-        {
+        {            
             Icon = Properties.Resources.Icon;
             this.AllowDrop = true;
         }
@@ -278,6 +278,11 @@ namespace IP_Bulk_lookup
         private void PictureBox4_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void PictureBox3_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start(Directory.GetCurrentDirectory());
         }
     }
 }
