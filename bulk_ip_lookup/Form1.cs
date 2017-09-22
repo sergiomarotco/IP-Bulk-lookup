@@ -40,7 +40,7 @@ namespace IP_Bulk_lookup
         {
             try
             {
-                var nums = address.Split('.');
+                string[] nums = address.Split('.');
                 int useless;
                 return nums.Length == 4 && nums.All(n => int.TryParse(n, out useless)) && nums.Select(int.Parse).All(n => n < 256);
             }
@@ -51,13 +51,12 @@ namespace IP_Bulk_lookup
             lock (locker)
             {
                 progress = progress + step;
-                if (progress != 0)
-                    Invoke((ThreadStart)delegate { progresslabel.Text = progress.ToString(); });
-                //progresslabel.Text = progress.ToString();
-                else Invoke((ThreadStart)delegate { progresslabel.Text = ""; });
             }
+            if (progress != 0)
+                Invoke((ThreadStart)delegate { progresslabel.Text = progress.ToString(); });
+            else Invoke((ThreadStart)delegate { progresslabel.Text = ""; });
         }
-        private void GetHostEntry(object IP)
+        private async void GetHostEntryAsync(object IP)
         {
             //Progress_change(1);                    
             try
@@ -68,7 +67,7 @@ namespace IP_Bulk_lookup
                     y[0] = (string)IP;
                     try
                     {
-                        string ip = ((string)IP);
+                        string ip = (string)IP;
                         char[] trimcharachters = { ' ', '\t' };
                         ip = ip.Trim(trimcharachters);
                         if (CheckIp(ip))
@@ -85,7 +84,7 @@ namespace IP_Bulk_lookup
                     {
                         y[1] = ee.Message;
                     }
-                    Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y)));
+                    await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y)));
                 }
                 catch { }
                 Progress_change(-1);
@@ -104,14 +103,14 @@ namespace IP_Bulk_lookup
             this.AllowDrop = true;
         }
         static object locker = new object();
-        private void GetHostEntriesFromString()
-        {
-        }
+
         private void Form1_DragEnter(object sender, DragEventArgs e)
         {
             try
             {
-                listView2.Items.Clear();
+                if(listView2.Items!=null)
+                    if(listView2.Items.Count !=0)
+                        listView2.Items.Clear();
                 Array data1 = e.Data.GetData("FileName") as Array;
                 //string filename = String.Empty;
                 if (data1 != null)
@@ -127,14 +126,13 @@ namespace IP_Bulk_lookup
                             Invoke((ThreadStart)delegate { progresslabel.Text = lines.Length.ToString(); });
                             for (int i = 0; i < lines.Length; i++)
                             {
-                                Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntry));
+                                Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntryAsync));
                                 myThread.Start(lines[i]);
                             }
                         }
                         catch { }
                     }
                 }
-                listView2.Sort();
                 listView2.Refresh();
             }
             catch { }
@@ -166,85 +164,100 @@ namespace IP_Bulk_lookup
         {
             try
             {
-                listView2.Items.Clear();
-                Array data1 = e.Data.GetData("FileName") as Array;
-                //string filename = String.Empty;
-                if (data1 != null)
-                {
-                    if ((data1.Length == 1) && (data1.GetValue(0) is String))
+                if (listView2.Items != null)
+                    if (listView2.Items.Count != 0)
                     {
-                        string filename = ((string[])data1)[0];
-                        //string ext = Path.GetExtension(filename).ToLower();
-                        string[] lines = File.ReadAllLines(filename);
-                        try
+                        listView2.Items.Clear();
+                        Array data1 = e.Data.GetData("FileName") as Array;
+                        //string filename = String.Empty;
+                        if (data1 != null)
                         {
-                            for (int i = 0; i < lines.Length; i++)
+                            if ((data1.Length == 1) && (data1.GetValue(0) is String))
                             {
-                                Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntry));
-                                myThread.Start(lines[i]);
+                                string filename = ((string[])data1)[0];
+                                //string ext = Path.GetExtension(filename).ToLower();
+                                string[] lines = File.ReadAllLines(filename);
+                                try
+                                {
+                                    for (int i = 0; i < lines.Length; i++)
+                                    {
+                                        Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntryAsync));
+                                        myThread.Start(lines[i]);
+                                    }
+                                }
+                                catch { }
                             }
                         }
-                        catch { }
+                        listView2.Refresh();
                     }
-                }
-                listView2.Sort();
-                listView2.Refresh();
             }
             catch { }
         }
 
         private void PictureBox1_Click(object sender, EventArgs e)
         {
-            string[] lines = new string[listView2.Items.Count];
-            if (listView2.Items.Count != 0)
+            try
             {
-                if (listView2.SelectedItems.Count != 0)
-                {
-                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                string[] lines = new string[listView2.Items.Count];
+                if (listView2.Items != null)
+                    if (listView2.Items.Count != 0)
                     {
-                        lines[i] += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text;
+                        if (listView2.SelectedItems.Count != 0)
+                        {
+                            for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                            {
+                                lines[i] += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text;
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < listView2.Items.Count; i++)
+                            {
+                                lines[i] += listView2.Items[i].SubItems[0].Text + "," + listView2.Items[i].SubItems[1].Text;
+                            }
+                        }
+                        DateTime D = DateTime.Now;
+                        string filename = "nslookup " + D.Year + "." + D.Month + "." + D.Day + " " + D.Hour + "-" + D.Minute + "-" + D.Second + ".txt";
+                        File.WriteAllLines(filename, lines);
+                        System.Diagnostics.Process.Start("explorer.exe", @"/select, " + filename);
                     }
-                }
-                else
-                {
-                    for (int i = 0; i < listView2.Items.Count; i++)
-                    {
-                        lines[i] += listView2.Items[i].SubItems[0].Text + "," + listView2.Items[i].SubItems[1].Text;
-                    }
-                }
-                DateTime D;D = DateTime.Now;
-                string filename = "nslookup " + D.Year + "." + D.Month + "." + D.Day + " " + D.Hour + "-" + D.Minute + "-" + D.Second+".txt";
-                File.WriteAllLines(filename, lines);
-                System.Diagnostics.Process.Start("explorer.exe", @"/select, " + filename);
             }
+            catch { }
         }
 
         private void ListView2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string lines = string.Empty;
-            for (int i = 0; i < listView2.SelectedItems.Count; i++)
-            {
-                lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
-            }
-            if(lines!="")
-                Clipboard.SetText(lines);
+            if (listView2.Items != null)
+                if (listView2.SelectedItems.Count != 0)
+                {
+                    string lines = string.Empty;
+                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                    {
+                        lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
+                    }
+                    Clipboard.SetText(lines);
+                }
         }
 
         private void СкопироватьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string lines = string.Empty;
-            for (int i = 0; i < listView2.SelectedItems.Count; i++)
-            {
-                lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
-            }
-            if (lines != "")
-                Clipboard.SetText(lines);
+            if (listView2.Items != null)
+                if (listView2.Items.Count != 0)
+                {
+                    string lines = string.Empty;
+                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                    {
+                        lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
+                    }
+                    Clipboard.SetText(lines);
+                }
         }
 
         private void PictureBox2_Click(object sender, EventArgs e)
         {
-            if(listView2.Items.Count!=0)
-                listView2.Items.Clear();
+            if (listView2.Items != null)
+                if (listView2.Items.Count != 0)
+                    listView2.Items.Clear();
             string[] lines = Clipboard.GetText().Split('\n');
             try
             {
@@ -253,9 +266,10 @@ namespace IP_Bulk_lookup
                 for (int i = 0; i < lines.Length; i++)
                 {
                     lines[i] = lines[i].TrimEnd('\r');
+                    lines[i] = lines[i].TrimEnd();
                     if (lines[i] != "")
                     {
-                        Thread myThread = new Thread(new ParameterizedThreadStart( GetHostEntry));
+                        Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntryAsync));
                          myThread.Start(lines[i]);
                     }
                     else Progress_change(-1);
@@ -266,13 +280,16 @@ namespace IP_Bulk_lookup
 
         private void PictureBox6_Click(object sender, EventArgs e)
         {
-            string lines = string.Empty;
-            for (int i = 0; i < listView2.SelectedItems.Count; i++)
-            {
-                lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
-            }
-            if (lines != "")
-                Clipboard.SetText(lines);
+            if (listView2.Items != null)
+                if (listView2.Items.Count != 0)
+                {
+                    string lines = string.Empty;
+                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                    {
+                        lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
+                    }
+                    Clipboard.SetText(lines);
+                }
         }
 
         private void PictureBox4_Click(object sender, EventArgs e)
