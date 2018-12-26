@@ -337,7 +337,7 @@ namespace IP_Bulk_lookup
             catch (Exception ee){
                 MessageBox.Show(ee.ToString());
             }
-            //try { Invoke((ThreadStart)delegate { RemoveDuplicates_In_ListView(listView2); }); } catch { }//удаляем дубликаты
+            try { Invoke((ThreadStart)delegate { RemoveDuplicates_In_ListView(listView2); }); } catch { }//удаляем дубликаты
         }
         /// <summary>
         /// Удаляет одинаковые элементы в listView
