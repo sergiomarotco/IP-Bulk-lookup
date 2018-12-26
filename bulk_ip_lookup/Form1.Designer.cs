@@ -89,7 +89,6 @@
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
             this.listView2.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.SortListView);
-            this.listView2.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListView2_DragDrop);
             this.listView2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ListView2_MouseClick);
             // 
             // columnHeader3
