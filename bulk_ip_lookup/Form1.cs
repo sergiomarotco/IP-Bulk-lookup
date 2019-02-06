@@ -34,7 +34,7 @@ namespace IP_Bulk_lookup
                     listView2.Items.Add(item);
                 }
             }
-            catch { }
+            catch(Exception ee) { MessageBox.Show(ee.ToString()); }
         }
 
         private int progress = 0;
@@ -98,7 +98,7 @@ namespace IP_Bulk_lookup
                 catch { }
                 Progress_change(-1);
             }
-            catch { }
+            catch (Exception ee){ MessageBox.Show(ee.ToString()); }
         }
 
         private void LinkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -180,12 +180,12 @@ namespace IP_Bulk_lookup
                                 GET_DNS_NAME(File.ReadAllText(filename));
                             }
                         }
-                        catch { }
+                        catch (Exception ee){ MessageBox.Show(ee.ToString()); }
                     }
                 }
                 listView2.Refresh();
             }
-            catch { }
+            catch(Exception ee) { MessageBox.Show(ee.ToString()); }
         }
 
         private void ListView2_MouseClick(object sender, MouseEventArgs e)
@@ -238,7 +238,7 @@ namespace IP_Bulk_lookup
                     System.Diagnostics.Process.Start("explorer.exe", "/select, " + filename);
                 }
             }
-            catch { }
+            catch(Exception ee) { MessageBox.Show(ee.ToString()); }
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace IP_Bulk_lookup
                     Clipboard.SetText(lines);
                 }
             }
-            catch { }
+            catch(Exception ee) { MessageBox.Show(ee.ToString()); }
         }
 
         private void СкопироватьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -317,6 +317,7 @@ namespace IP_Bulk_lookup
                             if (masksize_int <= 32)
                             {
                                 int ip_max = Get_IPs_count_for_mask(masksize_int);
+                                if (ip_max > 256) ip_max = 256;
                                 Progress_change(ip_max);
                                 for (int j = 0; j < ip_max; j++)
                                 {
