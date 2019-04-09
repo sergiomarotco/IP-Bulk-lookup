@@ -79,6 +79,7 @@
             this.columnHeader4});
             this.listView2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.listView2.Dock = System.Windows.Forms.DockStyle.Left;
+            this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HoverSelection = true;
             this.listView2.LabelEdit = true;

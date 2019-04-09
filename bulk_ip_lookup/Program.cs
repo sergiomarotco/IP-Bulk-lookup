@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace IP_Bulk_lookup
@@ -11,9 +12,13 @@ namespace IP_Bulk_lookup
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new Form1());
+            }
+            catch (Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "Program.cs Общая ошибка: " + ee.ToString() + Environment.NewLine); }
         }
     }
 }
