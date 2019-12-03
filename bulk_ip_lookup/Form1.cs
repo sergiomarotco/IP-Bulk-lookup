@@ -28,7 +28,7 @@ namespace IP_Bulk_lookup
                 if (InvokeRequired) Invoke(new InsertIntoListDelegate(InsertIntoList), item);                
                 else listView2.Items.Add(item);                
             }
-            catch(Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "InsertIntoList. Общая ошибка: " + ee.ToString() + Environment.NewLine); }
+            catch(Exception ee) { MessageBox.Show(ee.ToString());/* File.AppendAllText("EventLog.txt", "InsertIntoList. Общая ошибка: " + ee.ToString() + Environment.NewLine);*/ }
         }
 
         private int progress = 0;
@@ -44,7 +44,7 @@ namespace IP_Bulk_lookup
                 string[] nums = address.Split('.');
                 return nums.Length == 4 && nums.All(n => int.TryParse(n, out int useless)) && nums.Select(int.Parse).All(n => n < 256);
             }
-            catch { File.AppendAllText("EventLog.txt", "CheckIp. Общая ошибка: " + address.ToString() + Environment.NewLine); return false; }
+            catch { /*File.AppendAllText("EventLog.txt", "CheckIp. Общая ошибка: " + address.ToString() + Environment.NewLine);*/ return false; }
         }
 
         private void Progress_change(int step)
@@ -84,11 +84,12 @@ namespace IP_Bulk_lookup
                     }
                     catch (Exception ee)
                     {
-                        y[1] = ee.Message; 
-                    }
+                        y[1] = ee.Message;
+                       /* File.AppendAllText("EventLog.txt", "Dns.GetHostEntry: " + ip+" текст ошибки: " + ee.Message.ToString() + Environment.NewLine);*/
+                    }Thread.Sleep(10);
                     await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
                 }
-                catch { File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Ошибка проверки IP: " + ip + Environment.NewLine); }
+                catch {/* File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Ошибка проверки IP: " + ip + Environment.NewLine);*/ }
                 Progress_change(-1);
             }
             catch (Exception ee){ MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Общая ошибка: " + ee.ToString() + Environment.NewLine); }
@@ -99,7 +100,7 @@ namespace IP_Bulk_lookup
             System.Diagnostics.Process.Start("https://ru.icons8.com");//открыть рекламную ссылку
         }
 
-        private void Form1_Load_1(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             Icon = Properties.Resources.Icon;
             this.AllowDrop = true;
@@ -262,6 +263,7 @@ namespace IP_Bulk_lookup
                     y[1] = domain_finded[i].ToString();
                     try
                     {
+                        string ss = domain_finded[i].ToString();
                         IPAddress[] addresses = Dns.GetHostAddresses(domain_finded[i].ToString());
                         Progress_change(addresses.Length);
                         foreach (IPAddress address in addresses)
@@ -273,7 +275,7 @@ namespace IP_Bulk_lookup
                     }
                     catch (Exception ee)
                     {
-                        y[0] = ee.Message; File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Ошибка поиска IP: " + ee.ToString() + Environment.NewLine);
+                        y[0] = ee.Message; //File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Ошибка поиска IP: "+ domain_finded[i].ToString()+" текст ошибки: " + ee.ToString() + Environment.NewLine);
                     }                    
                     await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
                 }
@@ -316,9 +318,9 @@ namespace IP_Bulk_lookup
                         }
                     }
                 }
-                catch (Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Ошибка поиска IP: " + ee.ToString() + Environment.NewLine); }
+                catch (Exception ee) { MessageBox.Show(ee.ToString()); /*File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Ошибка поиска IP: " + ee.ToString() + Environment.NewLine);*/ }
             }
-            catch (Exception ee){MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Общая ошибка: " + ee.ToString() + Environment.NewLine); }
+            catch (Exception ee){MessageBox.Show(ee.ToString()); /*File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Общая ошибка: " + ee.ToString() + Environment.NewLine);*/ }
             try { Invoke((ThreadStart)delegate { RemoveDuplicates_In_ListView(listView2); }); } catch { }//удаляем дубликаты
         }
         /// <summary>
@@ -349,7 +351,7 @@ namespace IP_Bulk_lookup
             }
             catch (Exception ee)
             {
-                MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Общая ошибка: " + ee.ToString() + Environment.NewLine);
+                MessageBox.Show(ee.ToString()); //File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Общая ошибка: " + ee.ToString() + Environment.NewLine);
             }
         }
         private void PictureBox2_Click(object sender, EventArgs e)
