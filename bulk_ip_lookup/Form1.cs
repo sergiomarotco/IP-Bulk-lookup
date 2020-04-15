@@ -42,7 +42,7 @@ namespace IP_Bulk_lookup
             try
             {
                 string[] nums = address.Split('.');
-                return nums.Length == 4 && nums.All(n => int.TryParse(n, out int useless)) && nums.Select(int.Parse).All(n => n < 256);
+                return nums.Length == 4 && nums.All(n => int.TryParse(n, out int useless)) && nums.Select(int.Parse).All(n => n < 255);
             }
             catch { /*File.AppendAllText("EventLog.txt", "CheckIp. Общая ошибка: " + address.ToString() + Environment.NewLine);*/ return false; }
         }
@@ -217,7 +217,10 @@ namespace IP_Bulk_lookup
                     DateTime D = DateTime.Now;
                     string filename = "nslookup " + D.Year + "." + D.Month + "." + D.Day + " " + D.Hour + "-" + D.Minute + "-" + D.Second + ".txt";
                     File.WriteAllLines(filename, lines);
-                    System.Diagnostics.Process.Start("explorer.exe", "/select, " + filename);
+                    if (checkBox2.Checked)
+                        System.Diagnostics.Process.Start("explorer.exe", "/select, " + filename);
+                    if(checkBox1.Checked)
+                        System.Diagnostics.Process.Start("explorer.exe", "/open, " + filename);
                 }
             }
             catch(Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "PictureBox1_Click. Общая ошибка: " + ee.ToString() + Environment.NewLine); }
@@ -226,16 +229,40 @@ namespace IP_Bulk_lookup
         /// <summary>
         /// Скопировать текст в буфер обмена
         /// </summary>
-        private void CopyFromView()
+        /// <param name="type">0 - скопировать IP+Name, 1 - только IP, 2 - только Имя</param>
+        private void CopyFromView(int type)
         {
             try
             {
                 if (listView2.Items != null && listView2.Items.Count != 0)
                 {
                     string lines = string.Empty;
-                    for (int i = 0; i < listView2.SelectedItems.Count; i++)                    
-                        lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;                    
+                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
+                        switch (type)
+                        {
+                            case 0://скопировать IP+Name
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text;
+                                break;
+                            case 1://скопировать IP
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[0].Text;
+                                    break;
+                            case 2://скопировать Name
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[1].Text;
+                                    break;
+                            default://скопировать IP+Name
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text;
+                                    break;
+                        }
                     Clipboard.SetText(lines);
+
                 }
             }
             catch(Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "CopyFromView. Общая ошибка: " + ee.ToString() + Environment.NewLine); }
@@ -243,7 +270,7 @@ namespace IP_Bulk_lookup
 
         private void СкопироватьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CopyFromView();
+            CopyFromView(0);
         }
 
         /// <summary>
@@ -363,7 +390,7 @@ namespace IP_Bulk_lookup
 
         private void PictureBox6_Click(object sender, EventArgs e)
         {
-            CopyFromView();
+            CopyFromView(0);
         }
 
         private void PictureBox4_Click(object sender, EventArgs e)
@@ -406,6 +433,42 @@ namespace IP_Bulk_lookup
         private void LinkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://github.com/sergiomarotco/IP-Bulk-lookup");
+        }
+
+        private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void copyIPToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CopyFromView(1);
+        }
+
+        private void copyNameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CopyFromView(2);
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+            CopyFromView(0);
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            if (listView2.Items != null && listView2.Items.Count != 0)
+                listView2.Items.Clear();
+            GET_DNS_NAME(Clipboard.GetText());
         }
     }
 }
