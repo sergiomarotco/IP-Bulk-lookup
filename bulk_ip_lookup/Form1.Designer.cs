@@ -70,7 +70,6 @@
             // 
             // listView2
             // 
-            this.listView2.AllowColumnReorder = true;
             this.listView2.AllowDrop = true;
             this.listView2.AutoArrange = false;
             this.listView2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -103,7 +102,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.label4.Location = new System.Drawing.Point(337, 35);
+            this.label4.Location = new System.Drawing.Point(337, 23);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(102, 34);
             this.label4.TabIndex = 5;
