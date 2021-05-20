@@ -38,6 +38,8 @@
             this.label6 = new System.Windows.Forms.Label();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.скопироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyIPToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyNameToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.progresslabel = new System.Windows.Forms.Label();
@@ -46,8 +48,6 @@
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.label3 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.copyIPToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copyNameToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
@@ -60,12 +60,12 @@
             // linkLabel2
             // 
             this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(12, 573);
+            this.linkLabel2.Location = new System.Drawing.Point(344, 0);
             this.linkLabel2.Name = "linkLabel2";
-            this.linkLabel2.Size = new System.Drawing.Size(135, 17);
+            this.linkLabel2.Size = new System.Drawing.Size(79, 17);
             this.linkLabel2.TabIndex = 0;
             this.linkLabel2.TabStop = true;
-            this.linkLabel2.Text = "Icons by icons8.com";
+            this.linkLabel2.Text = "icons8.com";
             this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel2_LinkClicked);
             // 
             // listView2
@@ -77,11 +77,13 @@
             this.columnHeader3,
             this.columnHeader4});
             this.listView2.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.listView2.Dock = System.Windows.Forms.DockStyle.Left;
             this.listView2.GridLines = true;
+            this.listView2.HideSelection = false;
             this.listView2.LabelEdit = true;
             this.listView2.Location = new System.Drawing.Point(0, 0);
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(336, 568);
+            this.listView2.Size = new System.Drawing.Size(336, 599);
             this.listView2.TabIndex = 1;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -129,15 +131,29 @@
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(191, 82);
             this.contextMenuStrip1.Text = " Copy";
-            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // скопироватьToolStripMenuItem
             // 
-            this.скопироватьToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
             this.скопироватьToolStripMenuItem.Name = "скопироватьToolStripMenuItem";
             this.скопироватьToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
             this.скопироватьToolStripMenuItem.Text = "Copy IP + Name";
             this.скопироватьToolStripMenuItem.Click += new System.EventHandler(this.СкопироватьToolStripMenuItem_Click);
+            // 
+            // copyIPToClipboardToolStripMenuItem
+            // 
+            this.copyIPToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
+            this.copyIPToClipboardToolStripMenuItem.Name = "copyIPToClipboardToolStripMenuItem";
+            this.copyIPToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
+            this.copyIPToClipboardToolStripMenuItem.Text = "Copy IP";
+            this.copyIPToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyIPToClipboardToolStripMenuItem_Click);
+            // 
+            // copyNameToClipboardToolStripMenuItem
+            // 
+            this.copyNameToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
+            this.copyNameToClipboardToolStripMenuItem.Name = "copyNameToClipboardToolStripMenuItem";
+            this.copyNameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
+            this.copyNameToClipboardToolStripMenuItem.Text = "Copy Name";
+            this.copyNameToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyNameToClipboardToolStripMenuItem_Click);
             // 
             // pictureBox6
             // 
@@ -222,22 +238,6 @@
             this.linkLabel1.Text = "Author";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel1_LinkClicked);
             // 
-            // copyIPToClipboardToolStripMenuItem
-            // 
-            this.copyIPToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
-            this.copyIPToClipboardToolStripMenuItem.Name = "copyIPToClipboardToolStripMenuItem";
-            this.copyIPToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
-            this.copyIPToClipboardToolStripMenuItem.Text = "Copy IP";
-            this.copyIPToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyIPToClipboardToolStripMenuItem_Click);
-            // 
-            // copyNameToClipboardToolStripMenuItem
-            // 
-            this.copyNameToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
-            this.copyNameToClipboardToolStripMenuItem.Name = "copyNameToClipboardToolStripMenuItem";
-            this.copyNameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
-            this.copyNameToClipboardToolStripMenuItem.Text = "Copy Name";
-            this.copyNameToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyNameToClipboardToolStripMenuItem_Click);
-            // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
@@ -249,7 +249,6 @@
             this.checkBox1.TabIndex = 17;
             this.checkBox1.Text = "Open";
             this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // checkBox2
             // 
@@ -260,7 +259,6 @@
             this.checkBox2.TabIndex = 18;
             this.checkBox2.Text = "Save";
             this.checkBox2.UseVisualStyleBackColor = true;
-            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
             // Form1
             // 
