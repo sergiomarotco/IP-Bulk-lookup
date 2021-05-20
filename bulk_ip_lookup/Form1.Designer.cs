@@ -1,4 +1,4 @@
-﻿namespace IP_Bulk_lookup
+﻿namespace IP_Bulk_Lookup
 {
     partial class Form1
     {
@@ -83,7 +83,7 @@
             this.listView2.LabelEdit = true;
             this.listView2.Location = new System.Drawing.Point(0, 0);
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(336, 599);
+            this.listView2.Size = new System.Drawing.Size(336, 605);
             this.listView2.TabIndex = 1;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -112,6 +112,7 @@
             // 
             // label6
             // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(355, 232);
             this.label6.Name = "label6";
@@ -119,7 +120,7 @@
             this.label6.TabIndex = 7;
             this.label6.Text = "Clipboard\r\nset";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label6.Click += new System.EventHandler(this.label6_Click);
+            this.label6.Click += new System.EventHandler(this.Label6_Click);
             // 
             // contextMenuStrip1
             // 
@@ -129,31 +130,29 @@
             this.copyIPToClipboardToolStripMenuItem,
             this.copyNameToClipboardToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(191, 82);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(187, 76);
             this.contextMenuStrip1.Text = " Copy";
             // 
             // скопироватьToolStripMenuItem
             // 
             this.скопироватьToolStripMenuItem.Name = "скопироватьToolStripMenuItem";
-            this.скопироватьToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
+            this.скопироватьToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
             this.скопироватьToolStripMenuItem.Text = "Copy IP + Name";
             this.скопироватьToolStripMenuItem.Click += new System.EventHandler(this.СкопироватьToolStripMenuItem_Click);
             // 
             // copyIPToClipboardToolStripMenuItem
             // 
-            this.copyIPToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
             this.copyIPToClipboardToolStripMenuItem.Name = "copyIPToClipboardToolStripMenuItem";
-            this.copyIPToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
+            this.copyIPToClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
             this.copyIPToClipboardToolStripMenuItem.Text = "Copy IP";
-            this.copyIPToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyIPToClipboardToolStripMenuItem_Click);
+            this.copyIPToClipboardToolStripMenuItem.Click += new System.EventHandler(this.CopyIPToClipboardToolStripMenuItem_Click);
             // 
             // copyNameToClipboardToolStripMenuItem
             // 
-            this.copyNameToClipboardToolStripMenuItem.Image = global::IP_Bulk_lookup.Properties.Resources.Clipboard_Copy;
             this.copyNameToClipboardToolStripMenuItem.Name = "copyNameToClipboardToolStripMenuItem";
-            this.copyNameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(190, 26);
+            this.copyNameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
             this.copyNameToClipboardToolStripMenuItem.Text = "Copy Name";
-            this.copyNameToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyNameToClipboardToolStripMenuItem_Click);
+            this.copyNameToClipboardToolStripMenuItem.Click += new System.EventHandler(this.CopyNameToClipboardToolStripMenuItem_Click);
             // 
             // pictureBox6
             // 
@@ -168,7 +167,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::IP_Bulk_lookup.Properties.Resources.export;
+            this.pictureBox1.Image = global::IP_Bulk_Lookup.Properties.Resources.export;
             this.pictureBox1.Location = new System.Drawing.Point(347, 304);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(80, 80);
@@ -198,6 +197,7 @@
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(355, 106);
             this.label2.Name = "label2";
@@ -205,11 +205,11 @@
             this.label2.TabIndex = 13;
             this.label2.Text = "Clipboard\r\npaste";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label2.Click += new System.EventHandler(this.label2_Click);
+            this.label2.Click += new System.EventHandler(this.Label2_Click);
             // 
             // pictureBox3
             // 
-            this.pictureBox3.Image = global::IP_Bulk_lookup.Properties.Resources.Folder;
+            this.pictureBox3.Image = global::IP_Bulk_Lookup.Properties.Resources.Folder;
             this.pictureBox3.Location = new System.Drawing.Point(347, 458);
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.Size = new System.Drawing.Size(80, 80);
@@ -230,7 +230,7 @@
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(375, 573);
+            this.linkLabel1.Location = new System.Drawing.Point(366, 579);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(50, 17);
             this.linkLabel1.TabIndex = 16;
@@ -262,7 +262,7 @@
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(443, 599);
+            this.ClientSize = new System.Drawing.Size(443, 605);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.linkLabel1);
@@ -282,6 +282,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "IP bulk lookup tool";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.contextMenuStrip1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();

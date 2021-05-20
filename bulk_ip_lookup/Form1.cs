@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace IP_Bulk_lookup
+namespace IP_Bulk_Lookup
 {
     public partial class Form1 : Form
     {
@@ -87,13 +87,13 @@ namespace IP_Bulk_lookup
                         y[1] = ee.Message;
                         //File.AppendAllText("EventLog.txt", "Dns.GetHostEntry: " + ip + " текст ошибки: " + ee.Message.ToString() + Environment.NewLine);
                     }
-                    Thread.Sleep(10);
+                    //Thread.Sleep(10);
                     await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
                 }
                 catch { /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Ошибка проверки IP: " + ip + Environment.NewLine); */}
 
             }
-            catch (Exception ee) {  /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Иная ошибка: " + ee.ToString() + Environment.NewLine);*/ }
+            catch {  /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Иная ошибка: " + ee.ToString() + Environment.NewLine);*/ }
             //Progress_change(-1);
         }
 
@@ -104,7 +104,7 @@ namespace IP_Bulk_lookup
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Icon = Properties.Resources.Icon;
+            Icon = IP_Bulk_Lookup.Properties.Resources.Icon;
             this.AllowDrop = true;
             lvwColumnSorter = new ListViewColumnSorter();
             this.listView2.ListViewItemSorter = lvwColumnSorter;
@@ -120,7 +120,7 @@ namespace IP_Bulk_lookup
         /// <returns></returns>
         private int Get_IPs_count_for_mask(int mask)
         {
-            int max = 0;
+            int max;
             switch (mask)
             {
                 case 24:
@@ -196,7 +196,6 @@ namespace IP_Bulk_lookup
         {
             contextMenuStrip1.Hide();
         }
-
 
         private void PictureBox1_Click(object sender, EventArgs e)
         {
@@ -356,19 +355,19 @@ namespace IP_Bulk_lookup
         /// <summary>
         /// Удаляет одинаковые элементы в listView
         /// </summary>
-        /// <param name="ListView"></param>
-        public void RemoveDuplicates_In_ListView(ListView ListView)
+        /// <param name="ListView111"></param>
+        public void RemoveDuplicates_In_ListView(ListView ListView111)
         {
             try
             {
-                if (ListView == null)
+                if (ListView111 == null)
                 {
-                    throw new ArgumentNullException(nameof(ListView));
+                    throw new ArgumentNullException(nameof(ListView111));
                 }
 
                 var tags = new HashSet<string>();
                 var duplicates = new List<ListViewItem>();
-                foreach (ListViewItem item in ListView.Items)
+                foreach (ListViewItem item in ListView111.Items)
                 {
                     if (!tags.Add(item.Text))// HashSet.Add() returns false if it already contains the key.
                     {
@@ -438,22 +437,22 @@ namespace IP_Bulk_lookup
             System.Diagnostics.Process.Start("https://github.com/sergiomarotco/IP-Bulk-lookup");
         }
 
-        private void copyIPToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyIPToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CopyFromView(1);
         }
 
-        private void copyNameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyNameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CopyFromView(2);
         }
 
-        private void label6_Click(object sender, EventArgs e)
+        private void Label6_Click(object sender, EventArgs e)
         {
             CopyFromView(0);
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        private void Label2_Click(object sender, EventArgs e)
         {
             if (listView2.Items != null && listView2.Items.Count != 0)
                 listView2.Items.Clear();

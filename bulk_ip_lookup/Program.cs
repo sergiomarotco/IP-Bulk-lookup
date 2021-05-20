@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 
-namespace IP_Bulk_lookup
+namespace IP_Bulk_Lookup
 {
     internal static class Program
     {

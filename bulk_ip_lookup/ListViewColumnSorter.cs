@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Windows.Forms;
 
-namespace IP_Bulk_lookup
+namespace IP_Bulk_Lookup
 {
     /// <summary>
     /// This class is an implementation of the 'IComparer' interface.
@@ -29,6 +29,7 @@ namespace IP_Bulk_lookup
         /// <param name="x">First object to be compared</param>
         /// <param name="y">Second object to be compared</param>
         /// <returns>The result of the comparison. "0" if equal, negative if 'x' is less than 'y' and positive if 'x' is greater than 'y'</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "System.Int32.TryParse(System.String,System.Int32@)")]
         public int Compare(object x, object y)
         {
             int compareResult;

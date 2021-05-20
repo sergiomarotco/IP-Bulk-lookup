@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Программа быстрого массового запроса сетевого имени по IP")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sergiomarotco@gmail.com")]
-[assembly: AssemblyProduct("IP_Bulk_lookup")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyProduct("IP_Bulk_Lookup")]
+[assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номер сборки и номер редакции по умолчанию.
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.4.0.0")]
+[assembly: AssemblyVersion("1.5.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
