@@ -1,4 +1,6 @@
-Fast bulk ip lookup tool
+![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=sergiomarotco&show_icons=true&theme=radical)
+
+# Fast bulk ip lookup tool
 
 1. Drag and drop file or get from clipboard list of IP adresses or DNS names
 2. Save resault with DNS/server names to file or clipboard
