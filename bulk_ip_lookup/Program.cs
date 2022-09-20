@@ -4,6 +4,9 @@ using System.Windows.Forms;
 
 namespace IP_Bulk_Lookup
 {
+    /// <summary>
+    /// Основной класс.
+    /// </summary>
     internal static class Program
     {
         /// <summary>
@@ -18,7 +21,11 @@ namespace IP_Bulk_Lookup
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new Form1());
             }
-            catch (Exception ee) { MessageBox.Show(ee.ToString()); File.AppendAllText("EventLog.txt", "Program.cs Общая ошибка: " + ee.ToString() + Environment.NewLine); }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.ToString());
+                File.AppendAllText("EventLog.txt", "Program.cs Общая ошибка: " + ee.ToString() + Environment.NewLine);
+            }
         }
     }
 }
