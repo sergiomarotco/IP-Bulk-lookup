@@ -1,11 +1,11 @@
 # Fast bulk ip lookup tool
-## Description
+## Description ENG
 1. Drag and drop file or get from clipboard list of IP adresses or DNS names
 2. Save resault with DNS/server names to file or clipboard
-## Descriptions
+## Descriptions RU
 ### Основной функционал
 1. Определение неограниченного количества IP-адресов по неограниченному количеству DNS-имен;
-2. О пределение неограниченного количества DNS-имен по неограниченному количеству IP-адресов;
+2. Определение неограниченного количества DNS-имен по неограниченному количеству IP-адресов;
 3. Поддержка быстрого вычисления DNS-имён для сети класса C в формате A.B.C.D/маска.
 
 ### Не основной функционал
