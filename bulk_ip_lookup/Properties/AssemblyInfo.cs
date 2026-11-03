@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("IP bulk lookup")]
 [assembly: AssemblyDescription("Программа быстрого массового запроса сетевого имени по IP")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Sergiomarotco@gmail.com")]
+[assembly: AssemblyCompany("sergiomarotco@gmail.com")]
 [assembly: AssemblyProduct("IP_Bulk_Lookup")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCopyright("Copyright ©  2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -18,6 +18,12 @@ using System.Runtime.InteropServices;
 // для компонентов COM. Если необходимо обратиться к типу в этой сборке через
 // COM, задайте атрибуту ComVisible значение TRUE для этого типа.
 [assembly: ComVisible(false)]
+
+// Проект является Windows-only (WinForms); минимальная поддерживаемая ОС — Windows 10 1607
+// (нижняя граница поддержки .NET 10), работает также на Windows 11
+#if NET
+[assembly: global::System.Runtime.Versioning.SupportedOSPlatform("windows10.0.14393")]
+#endif
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
 [assembly: Guid("af8835d6-ebf3-4b7f-9adf-ebeff59a74d5")]

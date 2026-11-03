@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug IP bulk lookup (.NET 10)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-debug",
+      "program": "${workspaceFolder}/bulk_ip_lookup/bin/Debug/net10.0-windows/IP bulk lookup.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/bulk_ip_lookup",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Attach to IP bulk lookup process",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }
+  ]
+}
