@@ -17,6 +17,7 @@ namespace IP_Bulk_Lookup
         {
             try
             {
+                Application.SetHighDpiMode(HighDpiMode.PerMonitorV2); // корректный рендеринг на мониторах с высоким DPI (Windows 10/11)
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new Form1());

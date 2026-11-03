@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +42,7 @@ namespace IP_Bulk_Lookup
                 var duplicates = new List<ListViewItem>();
                 foreach (ListViewItem item in listView111.Items)
                 {
-                    if (tags.Add(item.Text))
+                    if (tags.Add(item.SubItems[1].Text))
                     { // HashSet.Add() returns false if it already contains the key
                         continue;
                     }
@@ -59,6 +59,61 @@ namespace IP_Bulk_Lookup
             }
         }
 
+        /// <summary>
+        /// Галка (хост отвечает на ping).
+        /// </summary>
+        private const string PingEmojiAlive = "\u2714\uFE0E";
+
+        /// <summary>
+        /// Emoji недоступности хоста (запрещающий знак) — хост не отвечает на ping и DNS записи нет.
+        /// </summary>
+        private const string PingEmojiDead = "\U0001F6AB";
+
+        /// <summary>
+        /// Предупреждение — DNS запись имеется, но хост не отвечает на ping.
+        /// </summary>
+        private const string PingEmojiWarning = "\u26A0\uFE0E";
+
+        /// <summary>
+        /// Отвечает ли хост на ping.
+        /// </summary>
+        /// <param name="ip">IP-адрес хоста.</param>
+        /// <returns>True если получен ответ, false если нет.</returns>
+        private static bool PingHost(string ip)
+        {
+            try
+            {
+                using (var ping = new Ping())
+                {
+                    var reply = ping.Send(ip, 1000);
+                    return reply != null && reply.Status == IPStatus.Success;
+                }
+            }
+            catch
+            { /* File.AppendAllText("EventLog.txt", "PingHost. Общая ошибка: " + ip + " " + ip + Environment.NewLine); */
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Создает строку listView: [колонка статуса ping, IP, имя] со статусом ping.
+        /// </summary>
+        /// <param name="ip">IP-адрес (или текст ошибки).</param>
+        /// <param name="name">DNS имя.</param>
+        /// <param name="alive">Результат ping: true - ✔, false - 🚫 или ⚠, null - пусто.</param>
+        /// <param name="dnsResolved">True если DNS запись для адреса получена (тогда при недоступности показывается ⚠ вместо 🚫).</param>
+        /// <returns>Готовый ListViewItem.</returns>
+        private static ListViewItem CreatePingRow(string ip, string name, bool? alive, bool dnsResolved = false)
+        {
+            string status = string.Empty;
+            if (alive.HasValue)
+            {
+                status = alive.Value ? PingEmojiAlive : (dnsResolved ? PingEmojiWarning : PingEmojiDead);
+            }
+
+            return new ListViewItem(new string[] { status, ip, name });
+        }
+
         private delegate void InsertIntoListDelegate(ListViewItem item);
 
         /// <summary>
@@ -69,8 +124,15 @@ namespace IP_Bulk_Lookup
         {
             try
             {
-                if (InvokeRequired) Invoke(new InsertIntoListDelegate(InsertIntoList), item);
-                else listView2.Items.Add(item);
+                if (InvokeRequired)
+                {
+                    Invoke(new InsertIntoListDelegate(InsertIntoList), item);
+                }
+                else
+                {
+                    listView2.Items.Add(item);
+                    AutoFitIpColumn();
+                }
             }
             catch (Exception ee)
             {
@@ -96,16 +158,42 @@ namespace IP_Bulk_Lookup
             }
         }
 
-        /*private void Progress_change(int step)
+        /// <summary>
+        /// Автоширина колонки с IP адресом: подгоняется под содержимое,
+        /// но не шире максимально возможного IP адреса (255.255.255.255).
+        /// </summary>
+        private void AutoFitIpColumn()
         {
-            lock (locker)
+            try
             {
-                progress += step;
+                if (listView2.Columns.Count < 2)
+                {
+                    return;
+                }
 
-                if (progress > 0) Invoke((ThreadStart)delegate { progresslabel.Text = progress.ToString(); });
-                else Invoke((ThreadStart)delegate { progresslabel.Text = ""; });
+                const int Padding = 8; // запас на границы ячейки
+                int maxWidth = TextRenderer.MeasureText("255.255.255.255", listView2.Font).Width + Padding;
+                int contentWidth = 0;
+                foreach (ListViewItem row in listView2.Items)
+                {
+                    int w = TextRenderer.MeasureText(row.SubItems[1].Text, listView2.Font).Width + Padding;
+                    if (w > contentWidth)
+                    {
+                        contentWidth = w;
+                    }
+                }
+
+                int width = contentWidth < maxWidth ? contentWidth : maxWidth; // не шире максимально возможного IP адреса
+                if (width > 20 && listView2.Columns[1].Width != width)
+                {
+                    listView2.Columns[1].Width = width;
+                    ListView2_Resize(this, EventArgs.Empty); // пересчитать ширину колонки NAME
+                }
             }
-        }*/
+            catch
+            { /* File.AppendAllText("EventLog.txt", "AutoFitIpColumn. Общая ошибка: " + Environment.NewLine); */
+            }
+        }
 
         /// <summary>
         /// Lookup (Dns.GetHostEntry).
@@ -116,6 +204,8 @@ namespace IP_Bulk_Lookup
             try
             {
                 string[] y = new string[2]; // bool lookuped = false;
+                bool? alive = null;
+                bool dnsResolved = false;
                 try
                 {
                     ip0 = (string)ip;
@@ -126,8 +216,10 @@ namespace IP_Bulk_Lookup
                     {
                         if (CheckIp(ip0))
                         {
-                            y[1] = Dns.GetHostEntry(ip0).HostName;
                             y[0] = ip0;
+                            alive = PingHost(ip0);
+                            y[1] = Dns.GetHostEntry(ip0).HostName;
+                            dnsResolved = !string.IsNullOrEmpty(y[1]);
                         }
                         else
                         {
@@ -142,7 +234,8 @@ namespace IP_Bulk_Lookup
                     }
 
                     // Thread.Sleep(10);
-                    await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
+                    ListViewItem row = CreatePingRow(y[0], y[1], alive, dnsResolved);
+                    await Task.Factory.StartNew(() => InsertIntoList(row)).ConfigureAwait(false);
                 }
                 catch
                 { /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Ошибка проверки IP: " + ip + Environment.NewLine); */
@@ -151,13 +244,11 @@ namespace IP_Bulk_Lookup
             catch
             { /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Иная ошибка: " + ee.ToString() + Environment.NewLine);*/
             }
-
-            // Progress_change(-1);
         }
 
         private void LinkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://ru.icons8.com"); // открыть рекламную ссылку
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://ru.icons8.com") { UseShellExecute = true }); // открыть рекламную ссылку
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -173,48 +264,18 @@ namespace IP_Bulk_Lookup
         }
 
         /// <summary>
-        /// Возвращает количество хостов для заданной маски.
+        /// Возвращает количество адресов в подсети (2^(32-mask)) для масок /20-/32.
         /// </summary>
-        /// <param name="mask">Маска сети.</param>
-        /// <returns>Максимальное зачение IP-адресов.</returns>
+        /// <param name="mask">Маска сети (20-32).</param>
+        /// <returns>Количество IP-адресов в подсети.</returns>
         private int Get_IPs_count_for_mask(int mask)
         {
-            int max;
-            switch (mask)
+            if (mask < 20 || mask > 32)
             {
-                case 24:
-                    max = 256;
-                    break;
-                case 25:
-                    max = 128;
-                    break;
-                case 26:
-                    max = 64;
-                    break;
-                case 27:
-                    max = 32;
-                    break;
-                case 28:
-                    max = 16;
-                    break;
-                case 29:
-                    max = 8;
-                    break;
-                case 30:
-                    max = 4;
-                    break;
-                case 31:
-                    max = 2;
-                    break;
-                case 32:
-                    max = 1;
-                    break;
-                default:
-                    max = 0;
-                    break;
+                return 0;
             }
 
-            return max;
+            return 1 << (32 - mask);
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
@@ -260,11 +321,6 @@ namespace IP_Bulk_Lookup
             }
         }
 
-        private void ОтменаToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            contextMenuStrip1.Hide();
-        }
-
         private void PictureBox1_Click(object sender, EventArgs e)
         {
             try
@@ -275,12 +331,12 @@ namespace IP_Bulk_Lookup
                     if (listView2.SelectedItems.Count != 0)
                     {
                         for (int i = 0; i < listView2.SelectedItems.Count; i++)
-                            lines[i] += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text;
+                            lines[i] += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
                     }
                     else
                     {
                         for (int i = 0; i < listView2.Items.Count; i++)
-                            lines[i] += listView2.Items[i].SubItems[0].Text + "," + listView2.Items[i].SubItems[1].Text;
+                            lines[i] += listView2.Items[i].SubItems[1].Text + "," + listView2.Items[i].SubItems[2].Text;
                     }
 
                     DateTime d = DateTime.Now;
@@ -316,23 +372,23 @@ namespace IP_Bulk_Lookup
                             case 0:
                                 // скопировать IP+Name
                                 if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text;
+                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
                                 break;
                             case 1: // скопировать IP
-                                if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[0].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[0].Text;
-                                break;
-                            case 2: // скопировать Name
                                 if (i != listView2.SelectedItems.Count - 1)
                                     lines += listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
                                 else lines += listView2.SelectedItems[i].SubItems[1].Text;
                                 break;
+                            case 2: // скопировать Name
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[2].Text;
+                                break;
                             default: // скопировать IP+Name
                                 if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[0].Text + ";" + listView2.SelectedItems[i].SubItems[1].Text;
+                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
                                 break;
                         }
                     }
@@ -361,22 +417,21 @@ namespace IP_Bulk_Lookup
                 Regex domain_pattern = new Regex(@"((?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)\.){1,}(?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)))");
                 MatchCollection domain_finded = domain_pattern.Matches(lines);
 
-                // Invoke((ThreadStart)delegate { progresslabel.Text = domain_finded.Count.ToString(); });
-                // Progress_change(domain_finded.Count);
                 for (int i = 0; i < domain_finded.Count; i++)
                 {
                     string[] y = new string[2]; // bool lookuped = false;
                     y[1] = domain_finded[i].ToString();
                     try
                     {
-                        string ss = domain_finded[i].ToString();
                         IPAddress[] addresses = Dns.GetHostAddresses(domain_finded[i].ToString());
 
-                        // Progress_change(addresses.Length);
                         foreach (IPAddress address in addresses)
                         {
                             y[0] = address.ToString();
-                            await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
+
+                            // DNS запись домена получена, поэтому недоступный по ping хост помечается предупреждением, а не запретом
+                            ListViewItem addressRow = CreatePingRow(y[0], y[1], PingHost(y[0]), dnsResolved: true);
+                            await Task.Factory.StartNew(() => InsertIntoList(addressRow)).ConfigureAwait(false);
                         }
 
                         // Progress_change(-addresses.Length);
@@ -386,7 +441,8 @@ namespace IP_Bulk_Lookup
                         y[0] = ee.Message; // File.AppendAllText("EventLog.txt", "GET_DNS_NAME. Ошибка поиска IP: "+ domain_finded[i].ToString()+" текст ошибки: " + ee.ToString() + Environment.NewLine);
                     }
 
-                    await Task.Factory.StartNew(() => InsertIntoList(new ListViewItem(y))).ConfigureAwait(false);
+                    ListViewItem domainRow = CreatePingRow(y[0], y[1], null);
+                    await Task.Factory.StartNew(() => InsertIntoList(domainRow)).ConfigureAwait(false);
                 }
 
                 lines = Regex.Replace(lines, @"((?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)\.){1,}(?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)))", string.Empty); // вырезаем сайты и теперь ищем ip
@@ -394,7 +450,6 @@ namespace IP_Bulk_Lookup
                 Regex ip_pattern = new Regex(@"\d+\.\d+\.\d+\.\d+\/\d+|\d+\.\d+\.\d+\.\d+");
                 MatchCollection ip_finded = ip_pattern.Matches(lines);
 
-                // Invoke((ThreadStart)delegate { progresslabel.Text = ip_finded.Count.ToString(); });
                 try
                 {
                     for (int i = 0; i < ip_finded.Count; i++)
@@ -405,27 +460,32 @@ namespace IP_Bulk_Lookup
                             string[] masksize = fgdf.Split('/');
                             string[] oktets = masksize[0].Split('.');
                             int masksize_int = Convert.ToInt32(masksize[1]);
-                            if (masksize_int >= 24)
+                            if (masksize_int >= 20 && masksize_int <= 32)
                             {
-                                if (masksize_int <= 32)
+                                // Считаем адрес сети (обнуляем хостовые биты) и перечисляем весь диапазон подсети
+                                uint ipUint = ((uint)Convert.ToInt32(oktets[0]) << 24) |
+                                              ((uint)Convert.ToInt32(oktets[1]) << 16) |
+                                              ((uint)Convert.ToInt32(oktets[2]) << 8) |
+                                              (uint)Convert.ToInt32(oktets[3]);
+                                uint maskUint = 0xFFFFFFFF << (32 - masksize_int);
+                                uint network = ipUint & maskUint;
+                                int ipCount = Get_IPs_count_for_mask(masksize_int);
+
+                                for (int j = 0; j < ipCount; j++)
                                 {
-                                    int ip_max = Get_IPs_count_for_mask(masksize_int);
-                                    if (ip_max > 255) ip_max = 255;
+                                    uint addr = network + (uint)j;
+                                    string ipStr = ((addr >> 24) & 0xFF) + "." + ((addr >> 16) & 0xFF) + "." + ((addr >> 8) & 0xFF) + "." + (addr & 0xFF);
 
-                                    // Progress_change(ip_max);
-                                    for (int j = 0; j < ip_max; j++)
-                                    {
-                                        Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntryAsync));
-                                        myThread.Start(oktets[0] + "." + oktets[1] + "." + oktets[2] + "." + (Convert.ToInt32(oktets[3]) + j));
+                                    // Пул потоков, чтобы /20 (4096 адресов) не создал 4096 одновременных потоков
+                                    ThreadPool.QueueUserWorkItem(new WaitCallback(GetHostEntryAsync), ipStr);
 
-                                        // Thread.Sleep(10);
-                                    }
+                                    // Thread.Sleep(10);
                                 }
                             }
 
-                            if (masksize_int < 24)
+                            if (masksize_int < 20 || masksize_int > 32)
                             {
-                                MessageBox.Show("Маска меньше /24 не поддерживается, поддержи проект доработкой");
+                                MessageBox.Show("Маски вне /20-/32 не поддерживаются, поддержи проект доработкой");
                             }
                         }
                         else
@@ -474,11 +534,6 @@ namespace IP_Bulk_Lookup
             CopyFromView(0);
         }
 
-        private void PictureBox4_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Drag the file onto the form :)");
-        }
-
         /// <summary>
         /// Открыть папку с программой.
         /// </summary>
@@ -486,7 +541,7 @@ namespace IP_Bulk_Lookup
         /// <param name="e">..</param>
         private void PictureBox3_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(Directory.GetCurrentDirectory());
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Directory.GetCurrentDirectory()) { UseShellExecute = true });
         }
 
         /// <summary>
@@ -523,7 +578,7 @@ namespace IP_Bulk_Lookup
 
         private void LinkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://github.com/sergiomarotco/IP-Bulk-lookup");
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/sergiomarotco/IP-Bulk-lookup") { UseShellExecute = true });
         }
 
         private void CopyIPToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
@@ -551,6 +606,35 @@ namespace IP_Bulk_Lookup
         private void Form1_Shown(object sender, EventArgs e)
         {
             GET_DNS_NAME(Clipboard.GetText());
+        }
+
+        /// <summary>
+        /// Растягивает последнюю колонку (NAME) на всю ширину таблицы при изменении размеров окна.
+        /// </summary>
+        private void ListView2_Resize(object sender, EventArgs e)
+        {
+            try
+            {
+                if (listView2.Columns.Count == 0)
+                {
+                    return;
+                }
+
+                int used = 0;
+                for (int i = 0; i < listView2.Columns.Count - 1; i++)
+                {
+                    used += listView2.Columns[i].Width;
+                }
+
+                int nameWidth = listView2.ClientSize.Width - used;
+                if (nameWidth > 50)
+                {
+                    listView2.Columns[listView2.Columns.Count - 1].Width = nameWidth;
+                }
+            }
+            catch
+            { /* File.AppendAllText("EventLog.txt", "ListView2_Resize. Общая ошибка: " + Environment.NewLine); */
+            }
         }
     }
 }
