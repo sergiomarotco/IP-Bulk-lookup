@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -196,17 +195,6 @@ namespace IP_Bulk_Lookup
             }
         }
 
-        /*private void Progress_change(int step)
-        {
-            lock (locker)
-            {
-                progress += step;
-
-                if (progress > 0) Invoke((ThreadStart)delegate { progresslabel.Text = progress.ToString(); });
-                else Invoke((ThreadStart)delegate { progresslabel.Text = ""; });
-            }
-        }*/
-
         /// <summary>
         /// Lookup (Dns.GetHostEntry).
         /// <param name="ip">IP-адрес.</param>
@@ -256,8 +244,6 @@ namespace IP_Bulk_Lookup
             catch
             { /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Иная ошибка: " + ee.ToString() + Environment.NewLine);*/
             }
-
-            // Progress_change(-1);
         }
 
         private void LinkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -333,11 +319,6 @@ namespace IP_Bulk_Lookup
 
                     break;
             }
-        }
-
-        private void ОтменаToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            contextMenuStrip1.Hide();
         }
 
         private void PictureBox1_Click(object sender, EventArgs e)
@@ -436,18 +417,14 @@ namespace IP_Bulk_Lookup
                 Regex domain_pattern = new Regex(@"((?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)\.){1,}(?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)))");
                 MatchCollection domain_finded = domain_pattern.Matches(lines);
 
-                // Invoke((ThreadStart)delegate { progresslabel.Text = domain_finded.Count.ToString(); });
-                // Progress_change(domain_finded.Count);
                 for (int i = 0; i < domain_finded.Count; i++)
                 {
                     string[] y = new string[2]; // bool lookuped = false;
                     y[1] = domain_finded[i].ToString();
                     try
                     {
-                        string ss = domain_finded[i].ToString();
                         IPAddress[] addresses = Dns.GetHostAddresses(domain_finded[i].ToString());
 
-                        // Progress_change(addresses.Length);
                         foreach (IPAddress address in addresses)
                         {
                             y[0] = address.ToString();
@@ -473,7 +450,6 @@ namespace IP_Bulk_Lookup
                 Regex ip_pattern = new Regex(@"\d+\.\d+\.\d+\.\d+\/\d+|\d+\.\d+\.\d+\.\d+");
                 MatchCollection ip_finded = ip_pattern.Matches(lines);
 
-                // Invoke((ThreadStart)delegate { progresslabel.Text = ip_finded.Count.ToString(); });
                 try
                 {
                     for (int i = 0; i < ip_finded.Count; i++)
@@ -495,7 +471,6 @@ namespace IP_Bulk_Lookup
                                 uint network = ipUint & maskUint;
                                 int ipCount = Get_IPs_count_for_mask(masksize_int);
 
-                                // Progress_change(ipCount);
                                 for (int j = 0; j < ipCount; j++)
                                 {
                                     uint addr = network + (uint)j;
@@ -557,11 +532,6 @@ namespace IP_Bulk_Lookup
         private void PictureBox6_Click(object sender, EventArgs e)
         {
             CopyFromView(0);
-        }
-
-        private void PictureBox4_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Drag the file onto the form :)");
         }
 
         /// <summary>

@@ -44,7 +44,6 @@
             this.copyNameToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.progresslabel = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
@@ -118,7 +117,6 @@
             this.sidePanel.Controls.Add(this.label4);
             this.sidePanel.Controls.Add(this.pictureBox6);
             this.sidePanel.Controls.Add(this.pictureBox1);
-            this.sidePanel.Controls.Add(this.progresslabel);
             this.sidePanel.Controls.Add(this.pictureBox2);
             this.sidePanel.Controls.Add(this.pictureBox3);
             this.sidePanel.Controls.Add(this.label3);
@@ -208,15 +206,7 @@
             this.pictureBox1.TabIndex = 9;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.PictureBox1_Click);
-            // 
-            // progresslabel
-            // 
-            this.progresslabel.AutoSize = true;
-            this.progresslabel.Location = new System.Drawing.Point(7, 558);
-            this.progresslabel.Name = "progresslabel";
-            this.progresslabel.Size = new System.Drawing.Size(0, 17);
-            this.progresslabel.TabIndex = 11;
-            // 
+            //
             // pictureBox2
             //
             this.pictureBox2.Controls.Add(this.label2);
@@ -332,7 +322,6 @@
         private System.Windows.Forms.ToolStripMenuItem скопироватьToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox6;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label progresslabel;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox pictureBox3;
