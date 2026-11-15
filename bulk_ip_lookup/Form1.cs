@@ -150,7 +150,7 @@ namespace IP_Bulk_Lookup
             try
             {
                 string[] nums = address.Split('.');
-                return nums.Length == 4 && nums.All(n => int.TryParse(n, out int useless)) && nums.Select(int.Parse).All(n => n < 255);
+                return nums.Length == 4 && nums.All(n => n.All(char.IsAsciiDigit) && byte.TryParse(n, out _));
             }
             catch
             { /*File.AppendAllText("EventLog.txt", "CheckIp. Общая ошибка: " + address.ToString() + Environment.NewLine);*/
@@ -308,36 +308,16 @@ namespace IP_Bulk_Lookup
             }
         }
 
-        private void ListView2_MouseClick(object sender, MouseEventArgs e)
-        {
-            switch (e.Button)
-            {
-                case MouseButtons.Right:
-                    {
-                        contextMenuStrip1.Show(this, new Point(e.X, e.Y));
-                    }
-
-                    break;
-            }
-        }
-
         private void PictureBox1_Click(object sender, EventArgs e)
         {
             try
             {
-                string[] lines = new string[listView2.Items.Count];
-                if (listView2.Items != null && listView2.Items.Count != 0)
+                if (listView2.Items.Count != 0)
                 {
-                    if (listView2.SelectedItems.Count != 0)
-                    {
-                        for (int i = 0; i < listView2.SelectedItems.Count; i++)
-                            lines[i] += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < listView2.Items.Count; i++)
-                            lines[i] += listView2.Items[i].SubItems[1].Text + "," + listView2.Items[i].SubItems[2].Text;
-                    }
+                    var rows = listView2.SelectedItems.Count > 0
+                        ? listView2.SelectedItems.Cast<ListViewItem>()
+                        : listView2.Items.Cast<ListViewItem>();
+                    string[] lines = rows.Select(row => row.SubItems[1].Text + "," + row.SubItems[2].Text).ToArray();
 
                     DateTime d = DateTime.Now;
                     string filename = "nslookup " + d.Year + "." + d.Month + "." + d.Day + " " + d.Hour + "-" + d.Minute + "-" + d.Second + ".txt";
@@ -362,38 +342,19 @@ namespace IP_Bulk_Lookup
         {
             try
             {
-                if (listView2.Items != null && listView2.Items.Count != 0)
+                var rows = listView2.SelectedItems.Count > 0
+                    ? listView2.SelectedItems.Cast<ListViewItem>()
+                    : listView2.Items.Cast<ListViewItem>();
+                string text = string.Join(Environment.NewLine, rows.Select(row => type switch
                 {
-                    string lines = string.Empty;
-                    for (int i = 0; i < listView2.SelectedItems.Count; i++)
-                    {
-                        switch (type)
-                        {
-                            case 0:
-                                // скопировать IP+Name
-                                if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
-                                break;
-                            case 1: // скопировать IP
-                                if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[1].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[1].Text;
-                                break;
-                            case 2: // скопировать Name
-                                if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[2].Text;
-                                break;
-                            default: // скопировать IP+Name
-                                if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
-                                break;
-                        }
-                    }
+                    1 => row.SubItems[1].Text,
+                    2 => row.SubItems[2].Text,
+                    _ => row.SubItems[1].Text + ";" + row.SubItems[2].Text,
+                }));
 
-                    Clipboard.SetText(lines);
+                if (!string.IsNullOrEmpty(text))
+                {
+                    Clipboard.SetText(text);
                 }
             }
             catch (Exception ee)

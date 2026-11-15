@@ -79,8 +79,10 @@
             this.columnHeaderPing,
             this.columnHeader3,
             this.columnHeader4});
+            this.listView2.ContextMenuStrip = this.contextMenuStrip1;
             this.listView2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.listView2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
             this.listView2.LabelEdit = true;
@@ -91,7 +93,6 @@
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
             this.listView2.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.SortListView);
-            this.listView2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ListView2_MouseClick);
             this.listView2.Resize += new System.EventHandler(this.ListView2_Resize);
             this.listView2.ColumnResizeEnded += new System.EventHandler(this.ListView2_Resize);
             // 
