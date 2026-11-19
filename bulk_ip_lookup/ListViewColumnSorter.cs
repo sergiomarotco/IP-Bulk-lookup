@@ -26,6 +26,16 @@ namespace IP_Bulk_Lookup
         }
 
         /// <summary>
+        /// Gets or sets the number of the column to which to apply the sorting operation (Defaults to '0').
+        /// </summary>
+        public int SortColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order of sorting to apply (for example, 'Ascending' or 'Descending').
+        /// </summary>
+        public SortOrder Order { get; set; }
+
+        /// <summary>
         /// This method is inherited from the IComparer interface.  It compares the two objects passed using a case insensitive comparison.
         /// </summary>
         /// <param name="x">First object to be compared.</param>
@@ -64,15 +74,5 @@ namespace IP_Bulk_Lookup
                     return 0; // Return '0' to indicate they are equal
             }
         }
-
-        /// <summary>
-        /// Gets or sets the number of the column to which to apply the sorting operation (Defaults to '0').
-        /// </summary>
-        public int SortColumn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the order of sorting to apply (for example, 'Ascending' or 'Descending').
-        /// </summary>
-        public SortOrder Order { get; set; }
     }
 }

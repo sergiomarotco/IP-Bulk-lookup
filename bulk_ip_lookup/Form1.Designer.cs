@@ -42,6 +42,8 @@
             this.скопироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyIPToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyNameToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyAllToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopLookupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -81,6 +83,7 @@
             this.columnHeader4});
             this.listView2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.listView2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
             this.listView2.LabelEdit = true;
@@ -93,6 +96,7 @@
             this.listView2.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.SortListView);
             this.listView2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ListView2_MouseClick);
             this.listView2.Resize += new System.EventHandler(this.ListView2_Resize);
+            this.listView2.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.listView2.ColumnResizeEnded += new System.EventHandler(this.ListView2_Resize);
             // 
             // columnHeaderPing
@@ -155,9 +159,11 @@
             // 
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.stopLookupToolStripMenuItem,
             this.скопироватьToolStripMenuItem,
             this.copyIPToClipboardToolStripMenuItem,
-            this.copyNameToClipboardToolStripMenuItem});
+            this.copyNameToClipboardToolStripMenuItem,
+            this.copyAllToClipboardToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(187, 76);
             this.contextMenuStrip1.Text = " Copy";
@@ -182,7 +188,23 @@
             this.copyNameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
             this.copyNameToClipboardToolStripMenuItem.Text = "Copy Name";
             this.copyNameToClipboardToolStripMenuItem.Click += new System.EventHandler(this.CopyNameToClipboardToolStripMenuItem_Click);
-            // 
+            //
+            // copyAllToClipboardToolStripMenuItem
+            //
+            this.copyAllToClipboardToolStripMenuItem.Name = "copyAllToClipboardToolStripMenuItem";
+            this.copyAllToClipboardToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.copyAllToClipboardToolStripMenuItem.Text = "Copy All";
+            this.copyAllToClipboardToolStripMenuItem.Click += new System.EventHandler(this.CopyAllToClipboardToolStripMenuItem_Click);
+            //
+            // stopLookupToolStripMenuItem
+            //
+            this.stopLookupToolStripMenuItem.ForeColor = System.Drawing.Color.Red;
+            this.stopLookupToolStripMenuItem.Name = "stopLookupToolStripMenuItem";
+            this.stopLookupToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.stopLookupToolStripMenuItem.Text = "STOP LOOKUP";
+            this.stopLookupToolStripMenuItem.Visible = false;
+            this.stopLookupToolStripMenuItem.Click += new System.EventHandler(this.StopLookupToolStripMenuItem_Click);
+            //
             // pictureBox6
             //
             this.pictureBox6.Controls.Add(this.label6);
@@ -329,6 +351,8 @@
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.ToolStripMenuItem copyIPToClipboardToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyNameToClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyAllToClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopLookupToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,12 +17,52 @@ namespace IP_Bulk_Lookup
     public partial class Form1 : Form
     {
         /// <summary>
+        /// Галка (хост отвечает на ping).
+        /// </summary>
+        private const string PingEmojiAlive = "\u2714\uFE0E";
+
+        /// <summary>
+        /// Emoji недоступности хоста (запрещающий знак) — хост не отвечает на ping и DNS записи нет.
+        /// </summary>
+        private const string PingEmojiDead = "\U0001F6AB";
+
+        /// <summary>
+        /// Предупреждение — DNS запись имеется, но хост не отвечает на ping.
+        /// </summary>
+        private const string PingEmojiWarning = "\u26A0\uFE0E";
+
+        /// <summary>
+        /// Флаг отмены выполняемого lookup. Устанавливается пунктом меню STOP LOOKUP;
+        /// фоновые задачи проверяют его перед добавлением строк в таблицу.
+        /// </summary>
+        private volatile bool lookupCancelled;
+
+        /// <summary>
+        /// Число активных фоновых задач lookup (проверок IP). Пока оно больше нуля,
+        /// Lookup не завершён и пункт STOP LOOKUP остаётся видимым.
+        /// </summary>
+        private int activeLookups;
+
+        /// <summary>
+        /// True, когда основной цикл выдачи задач lookup завершён (или отменён).
+        /// В сумме с обнулением <see cref="activeLookups"/> означает полный конец lookup.
+        /// </summary>
+        private volatile bool lookupLoopFinished = true;
+
+        /// <summary>
+        /// Переменная используемая при сортировке.
+        /// </summary>
+        private ListViewColumnSorter lvwColumnSorter;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Form1"/> class.
         /// </summary>
         public Form1()
         {
             InitializeComponent();
         }
+
+        private delegate void InsertIntoListDelegate(ListViewItem item);
 
         /// <summary>
         /// Удаляет одинаковые элементы в listView.
@@ -60,19 +99,28 @@ namespace IP_Bulk_Lookup
         }
 
         /// <summary>
-        /// Галка (хост отвечает на ping).
+        /// Добавляет элемент в listView2.
         /// </summary>
-        private const string PingEmojiAlive = "\u2714\uFE0E";
-
-        /// <summary>
-        /// Emoji недоступности хоста (запрещающий знак) — хост не отвечает на ping и DNS записи нет.
-        /// </summary>
-        private const string PingEmojiDead = "\U0001F6AB";
-
-        /// <summary>
-        /// Предупреждение — DNS запись имеется, но хост не отвечает на ping.
-        /// </summary>
-        private const string PingEmojiWarning = "\u26A0\uFE0E";
+        /// <param name="item">Добавляемый элемент в listView2.</param>
+        public void InsertIntoList(ListViewItem item)
+        {
+            try
+            {
+                if (InvokeRequired)
+                {
+                    Invoke(new InsertIntoListDelegate(InsertIntoList), item);
+                }
+                else
+                {
+                    listView2.Items.Add(item);
+                    AutoFitIpColumn();
+                }
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.ToString()); /* File.AppendAllText("EventLog.txt", "InsertIntoList. Общая ошибка: " + ee.ToString() + Environment.NewLine);*/
+            }
+        }
 
         /// <summary>
         /// Отвечает ли хост на ping.
@@ -112,32 +160,6 @@ namespace IP_Bulk_Lookup
             }
 
             return new ListViewItem(new string[] { status, ip, name });
-        }
-
-        private delegate void InsertIntoListDelegate(ListViewItem item);
-
-        /// <summary>
-        /// Добавляет элемент в listView2.
-        /// </summary>
-        /// <param name="item">Добавляемый элемент в listView2.</param>
-        public void InsertIntoList(ListViewItem item)
-        {
-            try
-            {
-                if (InvokeRequired)
-                {
-                    Invoke(new InsertIntoListDelegate(InsertIntoList), item);
-                }
-                else
-                {
-                    listView2.Items.Add(item);
-                    AutoFitIpColumn();
-                }
-            }
-            catch (Exception ee)
-            {
-                MessageBox.Show(ee.ToString()); /* File.AppendAllText("EventLog.txt", "InsertIntoList. Общая ошибка: " + ee.ToString() + Environment.NewLine);*/
-            }
         }
 
         /// <summary>
@@ -203,7 +225,13 @@ namespace IP_Bulk_Lookup
             string ip0 = string.Empty;
             try
             {
-                string[] y = new string[2]; // bool lookuped = false;
+                // Если пользователь нажал STOP LOOKUP - не выполняем проверку и не добавляем строку.
+                if (this.lookupCancelled)
+                {
+                    return;
+                }
+
+                string[] y = new string[2];
                 bool? alive = null;
                 bool dnsResolved = false;
                 try
@@ -233,7 +261,6 @@ namespace IP_Bulk_Lookup
                         // File.AppendAllText("EventLog.txt", "Dns.GetHostEntry: " + ip + " текст ошибки: " + ee.Message.ToString() + Environment.NewLine);
                     }
 
-                    // Thread.Sleep(10);
                     ListViewItem row = CreatePingRow(y[0], y[1], alive, dnsResolved);
                     await Task.Factory.StartNew(() => InsertIntoList(row)).ConfigureAwait(false);
                 }
@@ -243,6 +270,11 @@ namespace IP_Bulk_Lookup
             }
             catch
             { /*File.AppendAllText("EventLog.txt", "GetHostEntryAsync. Иная ошибка: " + ee.ToString() + Environment.NewLine);*/
+            }
+            finally
+            {
+                // Уменьшаем счётчик активных фоновых задач; при полном завершении lookup скрываем STOP LOOKUP.
+                this.FinishActiveLookup();
             }
         }
 
@@ -282,6 +314,8 @@ namespace IP_Bulk_Lookup
         {
             try
             {
+                // Разрешаем операцию перетаскивания (иначе Effect = None и курсор/drop неактивны).
+                e.Effect = DragDropEffects.Copy;
                 if (listView2.Items != null && listView2.Items.Count != 0) listView2.Items.Clear();
                 if (e.Data.GetData("FileName") is Array data1)
                 {
@@ -314,7 +348,22 @@ namespace IP_Bulk_Lookup
             {
                 case MouseButtons.Right:
                     {
-                        contextMenuStrip1.Show(this, new Point(e.X, e.Y));
+                        // Выделяем элемент под курсором, если он не входит в текущее
+                        // выделение, иначе команды копирования (CopyFromView) работают
+                        // над старым выделением или над пустым списком.
+                        ListViewItem itemUnderCursor = listView2.HitTest(e.Location).Item;
+                        if (itemUnderCursor != null && !itemUnderCursor.Selected)
+                        {
+                            listView2.SelectedItems.Clear();
+                            itemUnderCursor.Selected = true;
+                        }
+
+                        // Позиционируем меню относительно listView2: координаты e.X/e.Y
+                        // заданы в системе координат listView2. Показ относительно формы
+                        // (this) смещал меню на ширину боковой панели (sidePanel, Dock=Left),
+                        // из-за чего меню появлялось не в месте клика (под панелью) и его
+                        // нельзя было использовать.
+                        contextMenuStrip1.Show(listView2, e.Location);
                     }
 
                     break;
@@ -331,12 +380,12 @@ namespace IP_Bulk_Lookup
                     if (listView2.SelectedItems.Count != 0)
                     {
                         for (int i = 0; i < listView2.SelectedItems.Count; i++)
-                            lines[i] += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
+                            lines[i] += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
                     }
                     else
                     {
                         for (int i = 0; i < listView2.Items.Count; i++)
-                            lines[i] += listView2.Items[i].SubItems[1].Text + "," + listView2.Items[i].SubItems[2].Text;
+                            lines[i] += listView2.Items[i].SubItems[0].Text + "," + listView2.Items[i].SubItems[1].Text + "," + listView2.Items[i].SubItems[2].Text;
                     }
 
                     DateTime d = DateTime.Now;
@@ -357,7 +406,7 @@ namespace IP_Bulk_Lookup
         /// <summary>
         /// Скопировать текст в буфер обмена.
         /// </summary>
-        /// <param name="type">0 - скопировать IP+Name, 1 - только IP, 2 - только Имя.</param>
+        /// <param name="type">0 - скопировать IP+Name, 1 - только IP, 2 - только Имя, 3 - всю строку (Status,IP,Name).</param>
         private void CopyFromView(int type)
         {
             try
@@ -372,8 +421,8 @@ namespace IP_Bulk_Lookup
                             case 0:
                                 // скопировать IP+Name
                                 if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
+                                    lines += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
                                 break;
                             case 1: // скопировать IP
                                 if (i != listView2.SelectedItems.Count - 1)
@@ -385,10 +434,15 @@ namespace IP_Bulk_Lookup
                                     lines += listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
                                 else lines += listView2.SelectedItems[i].SubItems[2].Text;
                                 break;
+                            case 3: // скопировать всю строку (Status,IP,Name)
+                                if (i != listView2.SelectedItems.Count - 1)
+                                    lines += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[0].Text + "," + listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
+                                break;
                             default: // скопировать IP+Name
                                 if (i != listView2.SelectedItems.Count - 1)
-                                    lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
-                                else lines += listView2.SelectedItems[i].SubItems[1].Text + ";" + listView2.SelectedItems[i].SubItems[2].Text;
+                                    lines += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text + Environment.NewLine;
+                                else lines += listView2.SelectedItems[i].SubItems[1].Text + "," + listView2.SelectedItems[i].SubItems[2].Text;
                                 break;
                         }
                     }
@@ -412,6 +466,13 @@ namespace IP_Bulk_Lookup
         /// </summary>
         private async void GET_DNS_NAME(string lines)
         {
+            // Начинаем новый lookup: сбрасываем флаг отмены и завершённости цикла,
+            // показываем пункт STOP LOOKUP. Счётчик активных задач намеренно не обнуляется:
+            // между прогонами он равен нулю, а осиротевшие задачи отменённого прогона
+            // безопасно уменьшают его через Interlocked (см. CheckLookupFinished).
+            this.lookupLoopFinished = false;
+            this.lookupCancelled = false;
+            this.stopLookupToolStripMenuItem.Visible = true;
             try
             {
                 Regex domain_pattern = new Regex(@"((?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)\.){1,}(?:(?![0-9-])[a-zA-Z0-9-]{1,63}(?<!-)))");
@@ -419,7 +480,12 @@ namespace IP_Bulk_Lookup
 
                 for (int i = 0; i < domain_finded.Count; i++)
                 {
-                    string[] y = new string[2]; // bool lookuped = false;
+                    if (this.lookupCancelled)
+                    {
+                        break;
+                    }
+
+                    string[] y = new string[2];
                     y[1] = domain_finded[i].ToString();
                     try
                     {
@@ -427,14 +493,17 @@ namespace IP_Bulk_Lookup
 
                         foreach (IPAddress address in addresses)
                         {
+                            if (this.lookupCancelled)
+                            {
+                                break;
+                            }
+
                             y[0] = address.ToString();
 
                             // DNS запись домена получена, поэтому недоступный по ping хост помечается предупреждением, а не запретом
                             ListViewItem addressRow = CreatePingRow(y[0], y[1], PingHost(y[0]), dnsResolved: true);
                             await Task.Factory.StartNew(() => InsertIntoList(addressRow)).ConfigureAwait(false);
                         }
-
-                        // Progress_change(-addresses.Length);
                     }
                     catch (Exception ee)
                     {
@@ -454,6 +523,11 @@ namespace IP_Bulk_Lookup
                 {
                     for (int i = 0; i < ip_finded.Count; i++)
                     {
+                        if (this.lookupCancelled)
+                        {
+                            break;
+                        }
+
                         string fgdf = ip_finded[i].ToString();
                         if (fgdf.Contains("/"))
                         {
@@ -473,13 +547,19 @@ namespace IP_Bulk_Lookup
 
                                 for (int j = 0; j < ipCount; j++)
                                 {
+                                    if (this.lookupCancelled)
+                                    {
+                                        break;
+                                    }
+
                                     uint addr = network + (uint)j;
                                     string ipStr = ((addr >> 24) & 0xFF) + "." + ((addr >> 16) & 0xFF) + "." + ((addr >> 8) & 0xFF) + "." + (addr & 0xFF);
 
+                                    // Учитываем активную фоновую проверку до её постановки в очередь.
+                                    System.Threading.Interlocked.Increment(ref this.activeLookups);
+
                                     // Пул потоков, чтобы /20 (4096 адресов) не создал 4096 одновременных потоков
                                     ThreadPool.QueueUserWorkItem(new WaitCallback(GetHostEntryAsync), ipStr);
-
-                                    // Thread.Sleep(10);
                                 }
                             }
 
@@ -490,6 +570,9 @@ namespace IP_Bulk_Lookup
                         }
                         else
                         {
+                            // Учитываем активную фоновую проверку до её запуска.
+                            System.Threading.Interlocked.Increment(ref this.activeLookups);
+
                             Thread myThread = new Thread(new ParameterizedThreadStart(GetHostEntryAsync));
                             myThread.Start(fgdf);
                         }
@@ -507,11 +590,45 @@ namespace IP_Bulk_Lookup
 
             try
             {
-                Invoke(method: (ThreadStart)delegate { RemoveDuplicates_In_ListView(listView2); });
+                Invoke((ThreadStart)(() => RemoveDuplicates_In_ListView(listView2)));
             }
             catch
             {
             } // удаляем дубликаты
+
+            // Основной цикл выдачи задач завершён (или отменён). Скрытие кнопки происходит
+            // только если активных фоновых проверек уже не осталось.
+            this.lookupLoopFinished = true;
+            this.CheckLookupFinished();
+        }
+
+        /// <summary>
+        /// Завершает учёт одной активной фоновой проверки lookup и, при полном завершении,
+        /// скрывает пункт STOP LOOKUP. Вызывается из <see cref="GetHostEntryAsync"/> (finally).
+        /// </summary>
+        private void FinishActiveLookup()
+        {
+            System.Threading.Interlocked.Decrement(ref this.activeLookups);
+            this.CheckLookupFinished();
+        }
+
+        /// <summary>
+        /// Если основной цикл завершён и активных фоновых проверок не осталось,
+        /// скрывает пункт STOP LOOKUP (в потоке UI).
+        /// </summary>
+        private void CheckLookupFinished()
+        {
+            if (this.lookupLoopFinished && System.Threading.Volatile.Read(ref this.activeLookups) <= 0)
+            {
+                try
+                {
+                    this.BeginInvoke((System.Action)(() => this.stopLookupToolStripMenuItem.Visible = false));
+                }
+                catch
+                {
+                    // Если окно уже закрыто - скрывать нечего.
+                }
+            }
         }
 
         /// <summary>
@@ -543,11 +660,6 @@ namespace IP_Bulk_Lookup
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Directory.GetCurrentDirectory()) { UseShellExecute = true });
         }
-
-        /// <summary>
-        /// Переменная используемая при сортировке.
-        /// </summary>
-        private ListViewColumnSorter lvwColumnSorter;
 
         /// <summary>
         /// Отсортировать по Listview при нажатии на заголовок столба.
@@ -589,6 +701,22 @@ namespace IP_Bulk_Lookup
         private void CopyNameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CopyFromView(2);
+        }
+
+        private void CopyAllToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CopyFromView(3);
+        }
+
+        /// <summary>
+        /// Прерывание выполняемого lookup: выставляет флаг отмены и скрывает кнопку.
+        /// </summary>
+        /// <param name="sender">.</param>
+        /// <param name="e">..</param>
+        private void StopLookupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.lookupCancelled = true;
+            this.stopLookupToolStripMenuItem.Visible = false;
         }
 
         private void Label6_Click(object sender, EventArgs e)
